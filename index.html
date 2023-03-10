@@ -3,7 +3,20 @@
 <title>Mobile Ready Screen-Set Implementation Example</title>
 <meta name="viewport" content="width=device-width">
 <SCRIPT type="text/javascript" lang="javascript" src="https://cdns.eu1.gigya.com/js/gigya.js?apikey=4_OR9B5ok627Vbdxsj1hRzgw"></SCRIPT>
-</head>
+<script src="https://cdns.cdp.gigya.com/websdk.js"></script>
+ <script>
+    window.CDP = null;
+    gigya.cdp.init({
+        apiDomain: 'EU5',
+        bUnitId: '4_5v_KEAvmj70RiIvx-reDSA',
+        appId: 'HJsaM-C2RkO3fg2I2i89dg'
+    })
+    .then(sdk =>
+        window.CDP = sdk);
+</script>
+  
+  
+  </head>
 <body>
 <a href="#" onclick="gigya.accounts.showScreenSet({screenSet:'Default-LiteRegistration'});">Subscribe Here!</a>&nbsp;&nbsp;|&nbsp;&nbsp;
 <a href="#" onclick="gigya.accounts.showScreenSet({screenSet:'Default-RegistrationLogin', startScreen:'gigya-register-screen'});">Register</a>&nbsp;&nbsp;|&nbsp;&nbsp;
