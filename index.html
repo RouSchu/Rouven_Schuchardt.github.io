@@ -16,24 +16,11 @@
 </script>
   </head>
 <body>
- 
- <nav>
-   <ul>
-      <li><a href="#">Seite 1</a></li>
-      <li><a href="#">Seite 2</a></li>
-      <li><a href="#">Seite 3</a></li>
-      <li><a href="#">category</a></li>
-  </ul>
-</nav>
- 
-CDP.report('Webiste_TestCustomer',
-/*{
-    "category": "Seite 1"
-}*/
-); 
-<a href="#" onclick="gigya.accounts.showScreenSet({screenSet:'Default-LiteRegistration'});">Subscribe Here!</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+  <a href="#" onclick="gigya.accounts.showScreenSet({screenSet:'Default-LiteRegistration'});">Subscribe Here!</a>&nbsp;&nbsp;|&nbsp;&nbsp;
 <a href="#" onclick="gigya.accounts.showScreenSet({screenSet:'Default-RegistrationLogin', startScreewn:'gigya-register-screen'});">Register</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-<a href="#" onclick="gigya.accounts.showScreenSet({screenSet:'Default-RegistrationLogin'});">category</a>
+<a href="#" onclick="gigya.accounts.showScreenSet({screenSet:'Default-RegistrationLogin'});CDP.report('Webiste_TestCustomer', {'category': 'Clicked'});">category</a>
+
+
 <span id="logout" hidden>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="#" onclick="logout();">Logout</a></span>
 <script type="text/javascript" lang="javascript">
 // calls logout then hides the logout link if the logout succeeds
