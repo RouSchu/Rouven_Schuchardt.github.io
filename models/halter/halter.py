@@ -29,7 +29,11 @@ P = dict(
     fl_w_top=75.0,
     fl_w_bot=64.0,
     fl_sag=7.0,           # Durchhang des Bogens oben
-    hose_d=9.0,           # Schlauchdurchfuehrung vorne
+    hose_od=10.0,         # Aussendurchmesser Trinkschlauch (nachmessen!)
+    hose_gap=0.8,         # Spiel im Kanal (Durchmesser)
+    hose_wall=2.0,        # Wandstaerke Schlauchkanal
+    hose_z=-18.0,         # Hoehe Austritt vorne (Mitte)
+    hose_x_in=14.0,       # Eintritt unten: Abstand vom Flansch
 )
 
 
@@ -81,6 +85,21 @@ def slot(cx, cz, length, width, vertical, x0=-10, x1=10):
     return s + box
 
 
+def tube(r, pts):
+    """Rohr entlang eines Polygonzugs (Huellen aufeinanderfolgender Kugeln)."""
+    balls = [Manifold.sphere(r, 32).translate((x, 0, z)) for x, z in pts]
+    return Manifold.batch_boolean(
+        [Manifold.batch_hull([a, b]) for a, b in zip(balls, balls[1:])],
+        __import__("manifold3d").OpType.Add)
+
+
+def hose_path(extra=0.0):
+    """Kanal: unten senkrecht rein, sanfter Bogen, vorne waagerecht raus."""
+    L, xi, zh = P["length"], P["hose_x_in"], P["hose_z"]
+    return bezier(np.array([xi, P["body_bottom"] - 4 - extra]), np.array([xi, zh]),
+                  np.array([L + 2 + extra, zh]), 40)
+
+
 def build():
     L, w, t = P["length"], P["wall"], P["fl_t"]
     gz = P["groove_r"] - P["groove_depth"]          # Achse der Rinne
@@ -116,8 +135,14 @@ def build():
     for s in (-1, 1):
         m -= slot(s * 22, zT - 12, 9, 4.5, False)
         m -= slot(s * 24, lug_z, 9, 4.5, True)
-    # Schlauchdurchfuehrung in der Stirn
-    m -= cyl_x(P["hose_d"] / 2, L - 20, L + 5, 0, -P["front_drop"] / 2 - 3)
+    # Schlauchkanal: Eintritt unten, Austritt vorne Richtung Cockpit
+    rb = (P["hose_od"] + P["hose_gap"]) / 2
+    m += tube(rb + P["hose_wall"], hose_path()) ^ outer
+    m -= tube(rb, hose_path(10))
+    zb, xi = P["body_bottom"], P["hose_x_in"]
+    flare = Manifold.cylinder(4, rb + 2, rb, 48).translate((xi, 0, zb - 0.01))
+    m -= flare                                           # Fase Eintritt unten
+    m -= Manifold.cylinder(4, rb + 2, rb, 48).rotate((0, -90, 0)).translate((L + 0.01, 0, P["hose_z"]))
     return m
 
 
