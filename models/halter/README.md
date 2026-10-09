@@ -1,40 +1,30 @@
-# Halter – 3D-Modell aus Fotos
+# Trenner/Halter Vorratsbox + Abdeckung mit Schlauchführung
 
-`halter.stl` (Körper) · `deckel.stl` (Einklick-Deckel) · `baugruppe.stl` (beides zusammen, nur zur Ansicht) · `halter.py` (parametrisch) · `preview.png` · `fenster_detail.png`
+`halter.stl` (Trenner mit Körper) · `abdeckung.stl` (Abdeckung, ersetzt hier die Gummiabdeckung) ·
+`baugruppe.stl` (beides, nur Ansicht) · `halter.py` (parametrisch) · `preview.png` · `schnitt.png`
 
-Maßstab aus den Fotos: Daumenbreite ≈ 22 mm → ca. 0,1 mm/px. Toleranz realistisch **±5–10 %**.
+## Maße (Zollstock-Fotos)
 
-| Maß | Wert (mm) |
-|---|---|
-| Flansch Höhe gesamt | 135 |
-| Flansch Breite oben / unten | 75 / 64 |
-| Flansch Dicke | 4 |
-| Bogen oben (Durchhang) | 7 |
-| Körperlänge oben (ab Flansch) | 95 |
-| Stirnfläche vorne (senkrecht) | 24 |
-| Körpertiefe unten am Flansch | 31 |
-| Flansch über Körperoberkante | 19 |
-| Körperbreite am Flansch oben / unten | 62 / 56 |
-| Verjüngung zur Spitze | auf 70 % |
-| Wandstärke | 3 |
-| Rinne oben | R 11,5, 8 tief (für Ø 22,2 Aufsatz) |
-| Langlöcher | 9 × 4,5 (2× oben quer, 2× Mitte hoch) |
-| Mittelbohrung | Ø 5,5, Senkung Ø 10 |
-| Schlaucheintritt unten | Ø 10,8, 14 vom Flansch, mit Fase |
-| Deckelfenster (vorn auf der Bogenfläche) | 28 × 20, Falz 2 rundum, 1,6 tief |
-| Verstärkungsrahmen innen | 5 breit/tief |
-| Seitliche Rastlöcher | 2× 9 × 1,8, Oberkante 4,6 unter Oberfläche |
-| Deckel | Platte 1,6 + Stopfen, 2 Rastarme (1,4 dick, Nase 0,9), Spiel 0,2 |
-| Schlauchtülle | Ø 10,3 innen, 25° nach vorn-unten, Einlauffase |
+| Maß | Wert (mm) | Quelle |
+|---|---|---|
+| Flansch Breite oben / unten | 48 / 42 | gemessen |
+| Flansch Höhe | 84 | gemessen |
+| Bogen oben (Durchhang Mitte) | 7,5 | abgelesen |
+| Flansch Dicke | 3 | abgelesen |
+| Obere Langlöcher | 7 × 3,5, ±15 aus Mitte, 7 unter den Ecken | abgelesen |
+| Mittlere Langlöcher | 7 × 3,5 hochkant, ±16, 30 über Unterkante | abgelesen |
+| Körperbreite oben / unten | 42 / 38 | abgelesen |
+| Körperlänge | 60 | **geschätzt – bitte messen** |
+| Schlauch Außen-Ø | 10 | **geschätzt – bitte messen** |
 
-Nachmessen & skalieren: z. B. Flanschbreite oben messen (Soll 75) und
-`python3 halter.py --scale <gemessen/75>` – oder einzelne Werte in `P` ändern.
-Benötigt: `pip install manifold3d trimesh numpy`.
+## Abdeckung
+- Füllt den Raum zwischen Körperoberkante und Flanschbogen → **bündig mit dem Trenner**.
+- Schlauch liegt mittig in einer Rinne, 8 mm Schlitz oben → Schlauch wird eingedrückt und gehalten
+  (wie der Schlitz der Gummiabdeckung). Oberkante Schlauch liegt nicht höher als die Bogenmitte.
+- Kerbe im Flanschbogen: Schlauch kommt aus der Box (Gummiabdeckung dort abschneiden) und läuft durch.
+- Befestigung: 2 Zapfen hinten in den **oberen Langlöchern** des Trenners, vorn 2 Rasthaken unter dem Dach.
+- Montage: Abdeckung schräg ansetzen, Zapfen in die Langlöcher schieben, vorn runterdrücken bis es klickt.
 
-**Schlauchführung (Prinzip Canyon):** Schlauch unten in den Halter, innen hoch,
-durch die Tülle im Deckel nach vorn ins Cockpit. Die Tülle hält den Schlauch.
-Deckel von außen in das Fenster drücken, bis die Nasen in den seitlichen Löchern einrasten;
-zum Lösen die Nasen von innen mit einem kleinen Schraubendreher eindrücken.
+Abweichung vom Original: Mittelbohrung sitzt tiefer (unter der Schlauchrinne).
 
-**Druck:** Deckel in PETG/ABS oder besser Nylon (federnde Rastarme), Rastarme nach oben,
-Platte unten mit Stützmaterial unter der Tülle. Schlauch-Außendurchmesser nachmessen → `hose_od`.
+Werte ändern in `P` in `halter.py`, dann `python3 halter.py` (benötigt `pip install manifold3d trimesh numpy`).
