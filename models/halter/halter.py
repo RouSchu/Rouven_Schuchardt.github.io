@@ -39,9 +39,10 @@ P = dict(
     hose_clr=0.3,         # Spiel Schlauch in der Rinne (Durchmesser)
     guide_wall=1.8,       # Wand der Schlauchfuehrung
     hose_grip=0.2,        # Eintritt: Bohrung so viel KLEINER als der Schlauch -> klemmt
-    hose_play=1.5,        # in der Haube: Kanal so viel GROESSER als der Schlauch -> Spiel
-    bend_r=20.0,          # Biegeradius Schlauchmitte (zu klein -> Schlauch knickt)
-    port_z=-28.0,         # Hoehe des waagerechten Durchstosses (Z=0 = Koerperoberkante)
+    hose_play=1.5,        # im Keil: Kanal so viel GROESSER als der Schlauch -> Spiel
+    exit_angle=50.0,      # Schlauchaustritt: Winkel zur Plattenflaeche (Richtung Cockpit = oben)
+    wedge_bore=6.0,       # gefuehrte Laenge der Bohrung im Keil (bestimmt die Keilhoehe)
+    port_z=-28.0,         # Durchstoss: Hoehe Mitte auf der Plattenaussenseite (Z=0 = Koerperoberkante)
     sleeve=8.0,           # Fuehrungshuelse innen (in den Koerper hinein)
     plate_t=2.5,          # Dicke der Deckelplatte
     nose_t=1.2,           # Dicke der federnden Rastnase
@@ -125,6 +126,13 @@ def hose_path(ext=0.0):
     return pts
 
 
+def cyl_along(r, p, d, l0, l1, n=64):
+    """Zylinder auf Achse p + s*d (d in der XZ-Ebene), s in [l0, l1]."""
+    d = np.array(d, float) / np.linalg.norm(d)
+    ay = np.degrees(np.arctan2(d[0], d[2]))
+    return Manifold.cylinder(l1 - l0, r, r, n).translate((0, 0, l0)).rotate((0, ay, 0)).translate(tuple(p))
+
+
 def tube(r, pts):
     """Rohr entlang eines Polygonzugs (Huellen aufeinanderfolgender Kugeln)."""
     balls = [Manifold.sphere(r, 40).translate((x, 0, z)) for x, z in pts]
@@ -201,27 +209,32 @@ def build_cover():
         cover += nose(s * ty, P["fl_top"] - td, False)
         cover += nose(s * my, zB + mh, True)
 
-    # Schlauchfuehrung: Huelse innen + Haube aussen, Haube bis auf die Platte gefuellt
-    # (flache Seiten statt Rundrohr -> gut druckbar und stabil)
-    od = P["hose_od"]
-    r_grip = od / 2 - P["hose_grip"] / 2              # Eintritt: klemmt den Schlauch
-    r_play = od / 2 + P["hose_play"] / 2              # Haube: Schlauch hat Spiel
-    ro = r_play + P["guide_wall"]
-    xo = -t - pt - P["clr"]                            # Aussenflaeche der Platte
-    path = hose_path()
-    sq = [Manifold.cube((2 * ro, 2 * ro, 2 * ro), True).translate((x, 0, z)) for x, z in path]
-    hood = sum((Manifold.batch_hull([a, b]) for a, b in zip(sq, sq[1:])), Manifold())
-    hood = hood ^ box((-200, xo + 0.01), (-50, 50), (-200, P["fl_top"]))
-    lo, hi = np.array(hood.bounding_box()[:3]), np.array(hood.bounding_box()[3:])
-    foot = box((xo - 0.01, xo + 0.5), (-ro, ro), (lo[2], hi[2]))
-    cover += Manifold.batch_hull([hood, foot])
-    rs = r_grip + P["guide_wall"]
-    cover += cyl_x(rs, xo, P["sleeve"], 0, P["port_z"])          # Huelse innen
-    # Kanal: eng am Eintritt (Huelse + Platte), danach mit Spiel
-    cover -= cyl_x(r_grip, xo - 0.5, P["sleeve"] + 1, 0, P["port_z"])
-    cover -= tube(r_play, [(xo - 1.0, P["port_z"])] + path[2:] + [(path[-1][0], P["fl_top"] + 15)])
-    # Einlauffase innen
-    cover -= Manifold.cylinder(1.5, r_grip, r_grip + 1.0, 48).rotate((0, 90, 0)).translate((P["sleeve"] - 1.49, 0, P["port_z"]))
+    # Schlauchfuehrung wie Canyon: Keil (Dreiecksprisma, nur ebene Flaechen) + gerade Schraegbohrung
+    od, wall = P["hose_od"], P["guide_wall"]
+    r_grip = od / 2 - P["hose_grip"] / 2              # Eintritt (Huelse + Platte): klemmt
+    r_play = od / 2 + P["hose_play"] / 2              # im Keil: Spiel
+    th = np.radians(P["exit_angle"])
+    d = np.array([-np.sin(th), 0, np.cos(th)])        # nach aussen und oben (Richtung Cockpit)
+    xo, xi = -t - pt - P["clr"], -t - P["clr"]        # Platte aussen / innen
+    zp = P["port_z"]
+    p = np.array([xo, 0, zp])                          # Durchstosspunkt auf der Aussenseite
+    W = 2 * (r_play + wall)
+    zA = zp - r_play / np.sin(th) - wall               # hohe Keilflaeche unten (hinter dem Schlauch)
+    zC = zp + P["wedge_bore"] / np.cos(th)             # Schraegflaeche laeuft oben in die Platte aus
+    h = (zC - zA) / np.tan(th)                         # Keilhoehe: Schraegflaeche steht senkrecht zur Bohrung
+    tri = CrossSection([[(zA, 0), (zC, 0), (zA, h)]])  # (Z, Abstand von der Platte)
+    wedge = Manifold.extrude(tri, W).translate((0, 0, -W / 2))
+    wedge = wedge.transform(np.array([[0, -1, 0, xo + 0.01], [0, 0, 1, 0], [1, 0, 0, 0]], float))
+    cover += wedge
+    # Huelse innen auf derselben Achse (Schlauch kommt von unten)
+    cover += cyl_along(r_grip + wall, p, -d, (xi - xo) / np.sin(th) - 0.5, (xi - xo) / np.sin(th) + P["sleeve"])
+    # Bohrung: eng in Platte + Huelse, mit Spiel im Keil
+    cover -= cyl_along(r_grip, p, -d, -0.5, 60)
+    cover -= cyl_along(r_play, p, d, 0.0, 60)
+    # Einlauffase am Huelsenende
+    s_end = (xi - xo) / np.sin(th) + P["sleeve"]
+    cover -= Manifold.cylinder(1.5, r_grip + 1.0, r_grip, 48).translate((0, 0, -1.5)).rotate(
+        (0, np.degrees(np.arctan2(-d[0], -d[2])), 0)).translate(tuple(p - d * (s_end + 0.01)))
     return cover
 
 

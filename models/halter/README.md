@@ -23,12 +23,11 @@
   - oben 2× **quer** (liegen an der oberen Lochkante, Haken rastet nach oben hinter dem Flansch ein)
   - Mitte 2× **hochkant** (liegen an der inneren Lochkante, Haken rastet zur Mitte hinter der Lasche ein)
   - Nase 1,2 mm dick, Haken 0,5 mm, Spiel 0,15 mm. Lösen: Haken von vorn mit kleinem Schraubendreher eindrücken.
-- Schlauch kommt innen von unten, **stößt waagerecht durch den Deckel** und wird außen in einer Haube
-  (Biegeradius 20) nach oben Richtung Cockpit umgelenkt.
-- Haube **bis auf die Platte gefüllt** (Keil mit flachen Seiten statt Rundrohr) → einfacher zu drucken, stabiler.
-- Schlauch **klemmt am Eintritt** (Hülse + Platte, Ø = Schlauch − 0,2), in der Haube hat er **Spiel** (Ø = Schlauch + 1,5).
-- Druck: PETG oder Nylon, Platte flach aufs Bett (Innenseite oben), Stützen unter der Haube.
-- Parameter: `hose_od`, `hose_grip`, `hose_play`, `bend_r`, `port_z`, `plate_t`, `nose_t`, `nose_hook`.
+- Schlauchführung **wie Canyon**: einfacher **Keil** (Dreiecksprisma, nur ebene Flächen, ca. 16 hoch × 19 lang × 15 breit)
+  mit **gerader Schrägbohrung** (50° zur Platte, Richtung Cockpit) – kein Bogen, druckerfreundlich.
+- Schlauch **klemmt am Eintritt** (Hülse innen + Platte, Ø = Schlauch − 0,2), im Keil hat er **Spiel** (Ø = Schlauch + 1,5).
+- Druck: PETG oder Nylon, Platte flach aufs Bett (Außenseite oben, Keil wächst nach oben); kleine Stützen unter den Rastnasen und der Hülse.
+- Parameter: `hose_od`, `hose_grip`, `hose_play`, `exit_angle`, `wedge_bore`, `port_z`, `plate_t`, `nose_t`, `nose_hook`.
 
 Abweichung vom Original: Mittelbohrung sitzt tiefer (unter der Schlauchrinne).
 
