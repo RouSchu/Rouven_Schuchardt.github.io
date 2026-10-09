@@ -38,6 +38,8 @@ P = dict(
     hose_od=10.0,         # Aussendurchmesser Trinkschlauch (nachmessen!)
     hose_clr=0.3,         # Spiel Schlauch in der Rinne (Durchmesser)
     guide_wall=1.8,       # Wand der Schlauchfuehrung
+    hose_grip=0.2,        # Eintritt: Bohrung so viel KLEINER als der Schlauch -> klemmt
+    hose_play=1.5,        # in der Haube: Kanal so viel GROESSER als der Schlauch -> Spiel
     bend_r=20.0,          # Biegeradius Schlauchmitte (zu klein -> Schlauch knickt)
     port_z=-28.0,         # Hoehe des waagerechten Durchstosses (Z=0 = Koerperoberkante)
     sleeve=8.0,           # Fuehrungshuelse innen (in den Koerper hinein)
@@ -199,13 +201,27 @@ def build_cover():
         cover += nose(s * ty, P["fl_top"] - td, False)
         cover += nose(s * my, zB + mh, True)
 
-    # Schlauchfuehrung: Huelse innen + Haube aussen
-    g = tube(ro, hose_path())
-    outside = g ^ box((-200, -t - pt), (-50, 50), (-200, P["fl_top"]))
-    cover += (g ^ box((-200, P["sleeve"]), (-50, 50), (-200, P["fl_top"]))) + outside.hull()
-    cover -= tube(rh, hose_path(ext=15))
-    # Einlauffase innen (Schlauch kommt von unten aus dem Koerper)
-    cover -= Manifold.cylinder(2.0, rh, rh + 1.2, 48).rotate((0, 90, 0)).translate((P["sleeve"] - 1.99, 0, P["port_z"]))
+    # Schlauchfuehrung: Huelse innen + Haube aussen, Haube bis auf die Platte gefuellt
+    # (flache Seiten statt Rundrohr -> gut druckbar und stabil)
+    od = P["hose_od"]
+    r_grip = od / 2 - P["hose_grip"] / 2              # Eintritt: klemmt den Schlauch
+    r_play = od / 2 + P["hose_play"] / 2              # Haube: Schlauch hat Spiel
+    ro = r_play + P["guide_wall"]
+    xo = -t - pt - P["clr"]                            # Aussenflaeche der Platte
+    path = hose_path()
+    sq = [Manifold.cube((2 * ro, 2 * ro, 2 * ro), True).translate((x, 0, z)) for x, z in path]
+    hood = sum((Manifold.batch_hull([a, b]) for a, b in zip(sq, sq[1:])), Manifold())
+    hood = hood ^ box((-200, xo + 0.01), (-50, 50), (-200, P["fl_top"]))
+    lo, hi = np.array(hood.bounding_box()[:3]), np.array(hood.bounding_box()[3:])
+    foot = box((xo - 0.01, xo + 0.5), (-ro, ro), (lo[2], hi[2]))
+    cover += Manifold.batch_hull([hood, foot])
+    rs = r_grip + P["guide_wall"]
+    cover += cyl_x(rs, xo, P["sleeve"], 0, P["port_z"])          # Huelse innen
+    # Kanal: eng am Eintritt (Huelse + Platte), danach mit Spiel
+    cover -= cyl_x(r_grip, xo - 0.5, P["sleeve"] + 1, 0, P["port_z"])
+    cover -= tube(r_play, [(xo - 1.0, P["port_z"])] + path[2:] + [(path[-1][0], P["fl_top"] + 15)])
+    # Einlauffase innen
+    cover -= Manifold.cylinder(1.5, r_grip, r_grip + 1.0, 48).rotate((0, 90, 0)).translate((P["sleeve"] - 1.49, 0, P["port_z"]))
     return cover
 
 

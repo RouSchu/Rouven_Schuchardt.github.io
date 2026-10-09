@@ -23,10 +23,12 @@
   - oben 2× **quer** (liegen an der oberen Lochkante, Haken rastet nach oben hinter dem Flansch ein)
   - Mitte 2× **hochkant** (liegen an der inneren Lochkante, Haken rastet zur Mitte hinter der Lasche ein)
   - Nase 1,2 mm dick, Haken 0,5 mm, Spiel 0,15 mm. Lösen: Haken von vorn mit kleinem Schraubendreher eindrücken.
-- Schlauch kommt innen von unten, **stößt waagerecht durch den Deckel** (Hülse 8 mm mit Einlauffase)
-  und wird außen in einer Haube (Biegeradius 20) nach oben Richtung Cockpit umgelenkt und gehalten.
+- Schlauch kommt innen von unten, **stößt waagerecht durch den Deckel** und wird außen in einer Haube
+  (Biegeradius 20) nach oben Richtung Cockpit umgelenkt.
+- Haube **bis auf die Platte gefüllt** (Keil mit flachen Seiten statt Rundrohr) → einfacher zu drucken, stabiler.
+- Schlauch **klemmt am Eintritt** (Hülse + Platte, Ø = Schlauch − 0,2), in der Haube hat er **Spiel** (Ø = Schlauch + 1,5).
 - Druck: PETG oder Nylon, Platte flach aufs Bett (Innenseite oben), Stützen unter der Haube.
-- Parameter: `hose_od`, `bend_r`, `port_z`, `plate_t`, `nose_t`, `nose_hook`.
+- Parameter: `hose_od`, `hose_grip`, `hose_play`, `bend_r`, `port_z`, `plate_t`, `nose_t`, `nose_hook`.
 
 Abweichung vom Original: Mittelbohrung sitzt tiefer (unter der Schlauchrinne).
 
