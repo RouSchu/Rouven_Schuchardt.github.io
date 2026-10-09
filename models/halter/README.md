@@ -11,21 +11,22 @@
 | Flansch Höhe | 84 | gemessen |
 | Bogen oben (Durchhang Mitte) | 7,5 | abgelesen |
 | Flansch Dicke | 3 | abgelesen |
-| Obere Langlöcher | 7 × 3,5, ±15 aus Mitte, 7 unter den Ecken | abgelesen |
+| Obere Langlöcher | 7 × 3,5 quer, ±15 aus Mitte, 9 unter den Ecken | abgelesen |
 | Mittlere Langlöcher | 7 × 3,5 hochkant, ±16, 30 über Unterkante | abgelesen |
 | Körperbreite oben / unten | 42 / 38 | abgelesen |
 | Körperlänge | 60 | **geschätzt – bitte messen** |
 | Schlauch Außen-Ø | 10 | **geschätzt – bitte messen** |
 
-## Abdeckung (Prinzip Canyon)
-- Oberfläche folgt dem Flanschbogen → **bündig mit dem Trenner**; Gummiabdeckung dort abschneiden.
-- Schlauch kommt **senkrecht von unten** (Tank im Rahmendreieck) durch eine Hülse mit Einlauffase,
-  wird in einer keilförmigen Haube im Bogen (Radius 20) umgelenkt und tritt **waagerecht nach vorn** zum Cockpit aus.
-  Der Kanal ist nur 0,3 mm größer als der Schlauch → der Schlauch bleibt an seinem Platz.
-- Kein Einfüllstutzen (der sitzt unten am Tank).
-- Befestigung: 2 Zapfen hinten in den **oberen Langlöchern** des Trenners, vorn 2 Rasthaken.
-- Durchstoß 35 mm hinter dem Trenner; im Original muss das Dach dort für die Hülse ausgeschnitten werden.
-- Wichtige Parameter: `hose_od`, `bend_r`, `bend_z` (Haubenhöhe), `port_x`, `length`.
+## Deckel für die offene Seite (Prinzip Canyon)
+- Platte 2,5 mm mit der Kontur des Trenners (48/42 × 84, Bogen oben) → deckt die offene Seite bündig ab.
+- **4 Rastnasen**, jede ausgerichtet wie ihr Langloch:
+  - oben 2× **quer** (liegen an der oberen Lochkante, Haken rastet nach oben hinter dem Flansch ein)
+  - Mitte 2× **hochkant** (liegen an der inneren Lochkante, Haken rastet zur Mitte hinter der Lasche ein)
+  - Nase 1,2 mm dick, Haken 0,5 mm, Spiel 0,15 mm. Lösen: Haken von vorn mit kleinem Schraubendreher eindrücken.
+- Schlauch kommt innen von unten, **stößt waagerecht durch den Deckel** (Hülse 8 mm mit Einlauffase)
+  und wird außen in einer Haube (Biegeradius 20) nach oben Richtung Cockpit umgelenkt und gehalten.
+- Druck: PETG oder Nylon, Platte flach aufs Bett (Innenseite oben), Stützen unter der Haube.
+- Parameter: `hose_od`, `bend_r`, `port_z`, `plate_t`, `nose_t`, `nose_hook`.
 
 Abweichung vom Original: Mittelbohrung sitzt tiefer (unter der Schlauchrinne).
 
