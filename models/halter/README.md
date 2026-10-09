@@ -1,7 +1,7 @@
 # Trenner/Halter Vorratsbox + Abdeckung mit Schlauchführung
 
 `halter.stl` (Trenner mit Körper) · `abdeckung.stl` (Abdeckung, ersetzt hier die Gummiabdeckung) ·
-`baugruppe.stl` (beides, nur Ansicht) · `halter.py` (parametrisch) · `preview.png` · `schnitt.png`
+`baugruppe.stl` (beides, nur Ansicht) · `halter.py` (parametrisch) · `abdeckung_ansicht.png`
 
 ## Maße (Zollstock-Fotos)
 
@@ -17,13 +17,15 @@
 | Körperlänge | 60 | **geschätzt – bitte messen** |
 | Schlauch Außen-Ø | 10 | **geschätzt – bitte messen** |
 
-## Abdeckung
-- Füllt den Raum zwischen Körperoberkante und Flanschbogen → **bündig mit dem Trenner**.
-- Schlauch liegt mittig in einer Rinne, 8 mm Schlitz oben → Schlauch wird eingedrückt und gehalten
-  (wie der Schlitz der Gummiabdeckung). Oberkante Schlauch liegt nicht höher als die Bogenmitte.
-- Kerbe im Flanschbogen: Schlauch kommt aus der Box (Gummiabdeckung dort abschneiden) und läuft durch.
-- Befestigung: 2 Zapfen hinten in den **oberen Langlöchern** des Trenners, vorn 2 Rasthaken unter dem Dach.
-- Montage: Abdeckung schräg ansetzen, Zapfen in die Langlöcher schieben, vorn runterdrücken bis es klickt.
+## Abdeckung (Prinzip Canyon)
+- Oberfläche folgt dem Flanschbogen → **bündig mit dem Trenner**; Gummiabdeckung dort abschneiden.
+- Schlauch kommt **senkrecht von unten** (Tank im Rahmendreieck) durch eine Hülse mit Einlauffase,
+  wird in einer keilförmigen Haube im Bogen (Radius 20) umgelenkt und tritt **waagerecht nach vorn** zum Cockpit aus.
+  Der Kanal ist nur 0,3 mm größer als der Schlauch → der Schlauch bleibt an seinem Platz.
+- Kein Einfüllstutzen (der sitzt unten am Tank).
+- Befestigung: 2 Zapfen hinten in den **oberen Langlöchern** des Trenners, vorn 2 Rasthaken.
+- Durchstoß 35 mm hinter dem Trenner; im Original muss das Dach dort für die Hülse ausgeschnitten werden.
+- Wichtige Parameter: `hose_od`, `bend_r`, `bend_z` (Haubenhöhe), `port_x`, `length`.
 
 Abweichung vom Original: Mittelbohrung sitzt tiefer (unter der Schlauchrinne).
 

@@ -37,8 +37,11 @@ P = dict(
     # Schlauch
     hose_od=10.0,         # Aussendurchmesser Trinkschlauch (nachmessen!)
     hose_clr=0.3,         # Spiel Schlauch in der Rinne (Durchmesser)
-    snap_w=8.0,           # Schlitz oben: schmaler als Schlauch -> Schlauch schnappt ein
-    trough_wall=1.6,      # Wand der Schlauchrinne in der Abdeckung
+    guide_wall=1.8,       # Wand der Schlauchfuehrung
+    bend_r=20.0,          # Biegeradius Schlauchmitte (zu klein -> Schlauch knickt)
+    bend_z=-10.0,         # Bogen beginnt so tief unter der Abdeckung (je tiefer, desto flacher die Haube)
+    port_x=35.0,          # senkrechter Durchstoss: Abstand vom Trenner
+    sleeve=8.0,           # Fuehrungshuelse unten: Laenge unterhalb des Bogenbeginns
     clr=0.2,              # Spiel Abdeckung <-> Halter
     # Loecher im Flansch (gemessen/abgelesen)
     slot_top=(15.0, 7.0), # obere Langloecher: +-Y, Abstand unter den Ecken
@@ -111,24 +114,39 @@ def arc_pts(hw):
     return [(y, zT - sag + (R - np.sqrt(R ** 2 - y ** 2))) for y in np.linspace(hw, -hw, 61)]
 
 
-def hose_axis_z():
-    """Schlauchmitte so tief, dass der Schlauch nicht ueber die Bogenmitte ragt."""
-    return P["fl_top"] - P["fl_sag"] - P["hose_od"] / 2 - 0.5
+def hose_path(ext=0.0):
+    """Schlauch: senkrecht von unten, 90-Grad-Bogen, waagerecht nach vorn (Richtung Cockpit)."""
+    xp, zb, R, L = P["port_x"], P["bend_z"], P["bend_r"], P["length"]
+    pts = [(xp, zb - P["sleeve"] - ext), (xp, zb)]
+    pts += [(xp + R - R * np.cos(a), zb + R * np.sin(a)) for a in np.linspace(0, np.pi / 2, 24)[1:]]
+    pts += [(max(L, xp + R) + ext, zb + R)]
+    return pts
+
+
+def tube(r, pts):
+    """Rohr entlang eines Polygonzugs (Huellen aufeinanderfolgender Kugeln)."""
+    balls = [Manifold.sphere(r, 40).translate((x, 0, z)) for x, z in pts]
+    return Manifold.batch_hull([balls[0], balls[1]]) + sum(
+        (Manifold.batch_hull([a, b]) for a, b in zip(balls[1:], balls[2:])), Manifold())
+
+
+def guide_outer():
+    return tube(P["hose_od"] / 2 + P["hose_clr"] / 2 + P["guide_wall"], hose_path())
+
+
+def roof_cutout():
+    """Ausschnitt im Dach des Originalteils fuer die Fuehrung unter der Abdeckung."""
+    lo, hi = (guide_outer() ^ box((-50, 150), (-50, 50), (-50, 0))).bounding_box()[:3], \
+        (guide_outer() ^ box((-50, 150), (-50, 50), (-50, 0))).bounding_box()[3:]
+    c = P["clr"] + 0.3
+    return box((lo[0] - c, hi[0] + c), (lo[1] - c, hi[1] + c), (-30, 1))
 
 
 def build_body():
     L, w, t = P["length"], P["wall"], P["fl_t"]
-    hz = hose_axis_z()
-    rh = (P["hose_od"] + P["hose_clr"]) / 2
-    rg = rh + P["trough_wall"] + P["clr"]              # Rinne im Koerper (nimmt Abdeckungsrinne auf)
-
     outer = along_x(cross_section(), L + 5, -t, P["tip_scale"]) ^ along_y(side_profile())
     inner = along_x(cross_section(w), L + 5, -t, P["tip_scale"]) ^ along_y(side_profile(w))
     body = outer - inner
-
-    # Rinne oben im Koerper mit Rohrwandung
-    body += cyl_x(rg + w, 0, L, 0, hz) ^ outer
-    body -= cyl_x(rg, -20, L + 20, 0, hz)
 
     # Flansch / Trenner
     hwB, zB = P["fl_w_bot"] / 2, H()
@@ -138,7 +156,7 @@ def build_body():
     lug_z = zB + mh
     lugs = cyl_x(6, -t - 2, 2, -my, lug_z) + cyl_x(6, -t - 2, 2, my, lug_z)
     plate = plate - (opening - lugs) + (lugs ^ plate.hull())
-    boss_z = hz - rg - w - 3.5
+    boss_z = -12.0
     plate += cyl_x(6, -t, 0, 0, boss_z)
     body += cyl_x(6, 0, 10, 0, boss_z) ^ outer
 
@@ -150,9 +168,8 @@ def build_body():
         m -= slot(s * ty, P["fl_top"] - td, False)     # hier greifen die Zapfen der Abdeckung
         m -= slot(s * my, lug_z, True)
 
-    # Kerbe im Flanschbogen: Schlauch kommt hinten aus der Box und laeuft durch
-    m -= cyl_x(rh + 0.2, -t - 5, 1, 0, hz)
-    m -= box((-t - 5, 1), (-P["snap_w"] / 2 - 0.2, P["snap_w"] / 2 + 0.2), (hz, P["fl_top"] + 5))
+    # Ausschnitt im Dach fuer die Schlauchfuehrung (am Original ausschneiden)
+    m -= roof_cutout()
 
     # Schlitze im Dach fuer die Rasthaken
     for s in (-1, 1):
@@ -163,21 +180,29 @@ def build_body():
 
 
 def build_cover():
-    """Abdeckung: fuellt bis zum Flanschbogen (buendig), Schlauchrinne mit Schnapplippen."""
+    """Abdeckung buendig zum Flanschbogen; Schlauch kommt senkrecht von unten, wird in einer
+    keilfoermigen Haube (wie Canyon) nach vorn umgelenkt und dort gehalten."""
     L, w, t, c = P["length"], P["wall"], P["fl_t"], P["clr"]
-    hz = hose_axis_z()
     rh = (P["hose_od"] + P["hose_clr"]) / 2
-    rt = rh + P["trough_wall"]                         # Aussenradius Rinne
 
     hw = P["w_top"] / 2
     prof = CrossSection([[(-hw, 0), (hw, 0)] + arc_pts(hw)])
     cover = along_x(prof, L + 5, -t, P["tip_scale"]) ^ box((c, L), (-50, 50), (-50, 50))
-    cover += cyl_x(rt, c, L, 0, hz)                    # Rinne haengt in die Koerperrinne
-    cover -= cyl_x(rh, -5, L + 5, 0, hz)               # Schlauchkanal
-    cover -= box((-5, L + 5), (-P["snap_w"] / 2, P["snap_w"] / 2), (hz, 30))   # Schnappschlitz
-    # Einlauffasen vorn/hinten
-    for x0, x1, r0, r1 in ((L - 3, L + 0.01, rh, rh + 1.5), (c - 0.01, c + 3, rh + 1.5, rh)):
-        cover -= Manifold.cylinder(x1 - x0, r0, r1, 48).rotate((0, 90, 0)).translate((x0, 0, hz))
+
+    # Fuehrung: Huelle unten + Bogen; ueber der Oberflaeche zu einem Keil verrundet
+    g = guide_outer() ^ box((-50, L), (-50, 50), (P["bend_z"] - P["sleeve"], 100))
+    above = g ^ box((-50, 150), (-50, 50), (0, 100))
+    ro = P["hose_od"] / 2 + P["hose_clr"] / 2 + P["guide_wall"]
+    xp = P["port_x"]
+    ramp_foot = box((xp - ro - 14, xp - ro - 13.9), (-ro * 0.6, ro * 0.6), (0, 3))   # Keil hinten (Canyon-Form)
+    cover += g + Manifold.batch_hull([above, ramp_foot])
+    cover -= tube(rh, hose_path(ext=15))                    # Schlauchkanal
+    # Einlauffasen unten und am Austritt vorn
+    xp, zb, R = P["port_x"], P["bend_z"], P["bend_r"]
+    zl = zb - P["sleeve"]
+    cover -= Manifold.cylinder(2.0, rh + 1.2, rh, 48).translate((xp, 0, zl - 0.01))
+    xe = max(L, xp + R)
+    cover -= Manifold.cylinder(2.0, rh, rh + 1.2, 48).rotate((0, 90, 0)).translate((xe - 1.99, 0, zb + R))
 
     # Zapfen hinten -> greifen in die oberen Langloecher des Flansches
     ty, td = P["slot_top"]
