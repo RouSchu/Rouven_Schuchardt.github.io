@@ -23,12 +23,11 @@
   - oben 2× **quer** (liegen an der oberen Lochkante, Haken rastet nach oben hinter dem Flansch ein)
   - Mitte 2× **hochkant** (liegen an der inneren Lochkante, Haken rastet zur Mitte hinter der Lasche ein)
   - Nase 1,2 mm dick, Haken 0,5 mm, Spiel 0,15 mm. Lösen: Haken von vorn mit kleinem Schraubendreher eindrücken.
-- Schlauchführung **wie Canyon**: flacher **Keil** (nur ebene Flächen, 9 hoch × 32 lang) am Ausgang.
-- Schlauch geht **gerade durch** Hülse (5), Platte und Keil – **kein Knick** – und klemmt dort
-  (Ø = Schlauch − 0,2, ca. 14 mm Führungslänge). Danach biegt er sich frei nach oben Richtung Cockpit;
-  die Keilschräge fällt in diese Richtung ab, Austritt mit Fase.
-- Druck: PETG oder Nylon, Platte flach aufs Bett (Außenseite oben, Keil wächst nach oben); kleine Stützen unter den Rastnasen und der Hülse.
-- Parameter: `hose_od`, `hose_grip`, `wedge_h`, `wedge_len`, `port_z`, `plate_t`, `nose_t`, `nose_hook`.
+- Schlauchführung **wie Canyon**: flacher **Keil** (nur ebene Flächen, 9 hoch × 32 lang) mit
+  **gerader Schrägbohrung** (25° zur Platte, Richtung Cockpit). Bohrung Ø = Schlauch − 0,2 → klemmt.
+- **Innenseite komplett flach** (keine Hülse), nur Einlauffase an der Bohrung.
+- Druck: PETG oder Nylon, Platte flach aufs Bett (Außenseite oben, Keil wächst nach oben); kleine Stützen unter den Rastnasen.
+- Parameter: `hose_od`, `hose_grip`, `exit_angle`, `wedge_h`, `wedge_len`, `port_z`, `plate_t`, `nose_t`, `nose_hook`.
 
 Abweichung vom Original: Mittelbohrung sitzt tiefer (unter der Schlauchrinne).
 

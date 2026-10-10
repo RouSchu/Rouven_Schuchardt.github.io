@@ -41,8 +41,8 @@ P = dict(
     hose_grip=0.2,        # Eintritt: Bohrung so viel KLEINER als der Schlauch -> klemmt
     wedge_h=9.0,          # Keilhoehe ueber der Platte (flaches Profil)
     wedge_len=32.0,       # Keillaenge entlang der Platte
+    exit_angle=25.0,      # Schlauchaustritt: Winkel zur Plattenflaeche (klein = flach)
     port_z=-28.0,         # Durchstoss: Hoehe Mitte auf der Plattenaussenseite (Z=0 = Koerperoberkante)
-    sleeve=5.0,           # kurze Fuehrungshuelse innen
     plate_t=2.5,          # Dicke der Deckelplatte
     nose_t=1.2,           # Dicke der federnden Rastnase
     nose_hook=0.5,        # Ueberstand des Rasthakens hinter dem Flansch
@@ -113,16 +113,6 @@ def arc_pts(hw):
     hwT, sag, zT = P["fl_w_top"] / 2, P["fl_sag"], P["fl_top"]
     R = (hwT ** 2 + sag ** 2) / (2 * sag)
     return [(y, zT - sag + (R - np.sqrt(R ** 2 - y ** 2))) for y in np.linspace(hw, -hw, 61)]
-
-
-def hose_path(ext=0.0):
-    """Schlauch: kommt innen von unten, durchstoesst den Deckel waagerecht, Haube lenkt ihn nach oben."""
-    zp, R = P["port_z"], P["bend_r"]
-    xs = -P["fl_t"] - P["plate_t"] - 1.0              # Bogenbeginn knapp ausserhalb der Platte
-    pts = [(P["sleeve"] + ext, zp), (xs, zp)]
-    pts += [(xs - R * np.sin(a), zp + R - R * np.cos(a)) for a in np.linspace(0, np.pi / 2, 24)[1:]]
-    pts += [(xs - R, P["fl_top"] + ext)]
-    return pts
 
 
 def cyl_along(r, p, d, l0, l1, n=64):
@@ -208,27 +198,27 @@ def build_cover():
         cover += nose(s * ty, P["fl_top"] - td, False)
         cover += nose(s * my, zB + mh, True)
 
-    # Schlauchfuehrung wie Canyon: flacher Keil (nur ebene Flaechen) unter dem Austritt.
-    # Der Schlauch geht GERADE durch Platte + Keil (kein Knick), der Keil fuehrt ihn am Ausgang
-    # sanft nach oben Richtung Cockpit.
+    # Schlauchfuehrung wie Canyon: flacher Keil + gerade Schraegbohrung (Richtung Cockpit).
+    # Innenseite bleibt komplett flach (keine Huelse).
     od, wall = P["hose_od"], P["guide_wall"]
-    r_grip = od / 2 - P["hose_grip"] / 2              # Durchfuehrung: klemmt den Schlauch
+    r_grip = od / 2 - P["hose_grip"] / 2              # Bohrung klemmt den Schlauch
+    th = np.radians(P["exit_angle"])
+    d = np.array([-np.sin(th), 0, np.cos(th)])        # nach aussen und oben
     xo, xi = -t - pt - P["clr"], -t - P["clr"]        # Platte aussen / innen
     zp = P["port_z"]
+    p = np.array([xo, 0, zp])                          # Bohrungsmitte auf der Plattenaussenseite
     W = 2 * (r_grip + wall)
-    zA = zp - r_grip - wall                            # hohe Keilflaeche unten (hinter dem Schlauch)
+    zA = zp - r_grip / np.sin(th) - wall               # hohe Keilflaeche unten (hinter dem Schlauch)
     zC = zA + P["wedge_len"]                           # flache Schraege laeuft oben in die Platte aus
     h = P["wedge_h"]
     tri = CrossSection([[(zA, 0), (zC, 0), (zA, h)]])  # (Z, Abstand von der Platte)
     wedge = Manifold.extrude(tri, W).translate((0, 0, -W / 2))
     wedge = wedge.transform(np.array([[0, -1, 0, xo + 0.01], [0, 0, 1, 0], [1, 0, 0, 0]], float))
     cover += wedge
-    cover += cyl_x(r_grip + wall, xi - 0.5, xi + P["sleeve"], 0, zp)      # kurze Huelse innen
-    cover -= cyl_x(r_grip, xo - h - 5, xi + P["sleeve"] + 1, 0, zp)       # gerade Durchfuehrung
-    # Fasen: innen Einlauf, aussen oben verrundet (Schlauch legt sich nach oben um)
-    cover -= Manifold.cylinder(1.5, r_grip + 1.0, r_grip, 48).rotate((0, -90, 0)).translate((xi + P["sleeve"] + 0.01, 0, zp))
-    hz = h * (zC - zp) / (zC - zA)                     # Keildicke an der Bohrungsmitte
-    cover -= Manifold.cylinder(2.5, r_grip, r_grip + 2.0, 48).rotate((0, -90, 0)).translate((xo - hz + 2.5, 0, zp))
+    s_in = (xi - xo) / np.sin(th)                      # Bohrungslaenge durch die Platte
+    cover -= cyl_along(r_grip, p, d, -s_in - 2, 60)
+    # Einlauffase auf der flachen Innenseite
+    cover -= cyl_along(r_grip + 1.0, p, d, -s_in - 2, -s_in + 0.6) ^ box((xi - 0.6, xi + 5), (-50, 50), (-200, 50))
     return cover
 
 
