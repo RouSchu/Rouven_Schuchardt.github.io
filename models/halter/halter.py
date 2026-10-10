@@ -40,8 +40,9 @@ P = dict(
     guide_wall=1.8,       # Wand der Schlauchfuehrung
     hose_grip=0.2,        # Eintritt: Bohrung so viel KLEINER als der Schlauch -> klemmt
     hose_play=1.5,        # im Keil: Kanal so viel GROESSER als der Schlauch -> Spiel
-    exit_angle=50.0,      # Schlauchaustritt: Winkel zur Plattenflaeche (Richtung Cockpit = oben)
-    wedge_bore=6.0,       # gefuehrte Laenge der Bohrung im Keil (bestimmt die Keilhoehe)
+    exit_angle=25.0,      # Schlauchaustritt: Winkel zur Plattenflaeche (klein = flach)
+    wedge_h=9.0,          # Keilhoehe ueber der Platte (flaches Profil)
+    wedge_len=32.0,       # Keillaenge entlang der Platte
     port_z=-28.0,         # Durchstoss: Hoehe Mitte auf der Plattenaussenseite (Z=0 = Koerperoberkante)
     sleeve=8.0,           # Fuehrungshuelse innen (in den Koerper hinein)
     plate_t=2.5,          # Dicke der Deckelplatte
@@ -220,8 +221,8 @@ def build_cover():
     p = np.array([xo, 0, zp])                          # Durchstosspunkt auf der Aussenseite
     W = 2 * (r_play + wall)
     zA = zp - r_play / np.sin(th) - wall               # hohe Keilflaeche unten (hinter dem Schlauch)
-    zC = zp + P["wedge_bore"] / np.cos(th)             # Schraegflaeche laeuft oben in die Platte aus
-    h = (zC - zA) / np.tan(th)                         # Keilhoehe: Schraegflaeche steht senkrecht zur Bohrung
+    zC = zA + P["wedge_len"]                           # flache Schraege laeuft oben in die Platte aus
+    h = P["wedge_h"]
     tri = CrossSection([[(zA, 0), (zC, 0), (zA, h)]])  # (Z, Abstand von der Platte)
     wedge = Manifold.extrude(tri, W).translate((0, 0, -W / 2))
     wedge = wedge.transform(np.array([[0, -1, 0, xo + 0.01], [0, 0, 1, 0], [1, 0, 0, 0]], float))
